@@ -14,14 +14,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 
-# 데이터 로딩
+# 데이터 불러오기
 data = pd.read_csv("./data/5.gt_full.csv")
 
 # 데이터 확인
 print("Gas Turbine Dataset:\n")
 print(data.head())  # 데이터의 상위 몇 행을 출력하여 확인합니다.
 
-# 불필요한 열 제거
+# 불필요한 데이터 제거
 data = data.drop("Unnamed: 0", axis=1)
 print("\nDropping unnecessary columns:")
 print(data.head())
@@ -46,7 +46,6 @@ def plot_distributions_and_relationships(data, feature_cols, target_col):
         ax = axes[i // ncols, i % ncols]
         sns.histplot(x=col, data=data, ax=ax, kde=False)
         ax.set_ylabel("Count")
-        ax.set_title(f"{col} Distribution")
         ax.grid(True)
 
     # 빈 서브플롯 제거
@@ -66,7 +65,6 @@ def plot_distributions_and_relationships(data, feature_cols, target_col):
         sns.scatterplot(x=col, y=target_col, data=data, ax=ax)
         ax.set_xlabel(col)
         ax.set_ylabel(target_col)
-        ax.set_title(f"{col} vs {target_col}")
         ax.grid(True)
 
     # 빈 서브플롯 제거
@@ -124,8 +122,7 @@ x_test_scaled = scaler.transform(x_test)
 print(pd.DataFrame(x_test_scaled, columns=x_test.columns).head())
 
 # 다양한 회귀 모델을 훈련하고 성능 평가
-models = [LinearRegression(), Lasso(), Ridge(), SVR(), KNeighborsRegressor(), DecisionTreeRegressor(),
-          XGBRegressor(), RandomForestRegressor(), ExtraTreesRegressor()]
+models = [LinearRegression(), Lasso(), Ridge(), KNeighborsRegressor(), DecisionTreeRegressor(), ExtraTreesRegressor()]
 r2_scores = []
 print("Model Training:\n")
 for model in models:
@@ -142,10 +139,10 @@ max_r2 = max(r2_scores)
 print(f"Best R2 Score Recorded: {max_r2}.")
 max_idx = r2_scores.index(max_r2)
 best_model = models[max_idx]
-print(f"\nBest Model Performance: {best_model}.")
+
 
 # 선택된 모델로 추가 평가
-print("Evaluating Best Model:")
+print("\n\nModel1 ExtraTreesRegressor:")
 et = ExtraTreesRegressor()
 et.fit(x_train_scaled, y_train)  # 스케일링된 데이터로 모델 훈련
 y_pred = et.predict(x_test_scaled)  # 스케일링된 데이터로 예측
@@ -161,10 +158,33 @@ plt.figure(figsize=(12, 6))
 plt.scatter(y_test, y_pred, alpha=0.5)
 plt.xlabel('Actual Values')
 plt.ylabel('Predicted Values')
-plt.title('Actual vs Predicted Values')
+plt.title('ExtraTreesRegressor')
 plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'k--', lw=2)  # 대각선 추가
 plt.grid(True)
 plt.show()
+
+print("Model2 LinearRegression:")
+lt = LinearRegression()
+lt.fit(x_train_scaled, y_train)  # 스케일링된 데이터로 모델 훈련
+y_pred = lt.predict(x_test_scaled)  # 스케일링된 데이터로 예측
+r2 = round(r2_score(y_test, y_pred), 4)  # R2 점수 계산
+mae = mean_absolute_error(y_test, y_pred)  # 평균 절대 오차 계산
+mse = mean_squared_error(y_test, y_pred)  # 평균 제곱 오차 계산
+print(f"R2 Score: {r2}.")
+print(f"Mean Squared Error: {mse}.")
+print(f"Mean Absolute Error: {mae}.")
+
+# 예측값과 실제값의 관계를 산점도로 시각화
+plt.figure(figsize=(12, 6))
+plt.scatter(y_test, y_pred, alpha=0.5)
+plt.xlabel('Actual Values')
+plt.ylabel('Predicted Values')
+plt.title('LinearRegression')
+plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'k--', lw=2)  # 대각선 추가
+plt.grid(True)
+plt.show()
+
+print(f"\nBest Model Performance: {best_model}.")
 
 # 모델 저장
 print("Model Saved.")
